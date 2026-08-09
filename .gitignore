@@ -1,0 +1,5 @@
+.shots/
+node_modules/
+assets/source/clip.mov
+assets/source/*.png
+assets/brand/verify*

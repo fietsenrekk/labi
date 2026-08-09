@@ -1,0 +1,89 @@
+{
+  "$comment": "Single source of truth. Every value here was read off a source the business itself controls (labiantwerp.be, or the Setmore booking system) on 2026-08-09 and is cited in docs/FINDINGS.md. Directory listings were NOT used - they contradict each other and each other's hours.",
+
+  "name": "Labi",
+  "legalNameNote": "Trading name unconfirmed - see CLIENT_ACTIONS.md",
+  "tagline": {
+    "nl": "Kapper in Antwerpen",
+    "en": "Barber in Antwerp"
+  },
+  "address": {
+    "street": "Klapdorp 37",
+    "postalCode": "2000",
+    "city": "Antwerpen",
+    "country": "BE",
+    "countryName": { "nl": "België", "en": "Belgium" },
+    "source": "labiantwerp.be and Setmore both state Klapdorp 37; older directory listings still say Lange Koepoortstraat 76 and are stale (F-001)"
+  },
+  "geo": {
+    "lat": 51.2258,
+    "lon": 4.4030,
+    "$comment": "Approximate rooftop coordinate for Klapdorp 37, 2000 Antwerpen. Confirm before relying on it for navigation - listed in CLIENT_ACTIONS.md."
+  },
+  "phone": "+32468562324",
+  "phoneDisplay": "+32 468 56 23 24",
+  "email": "alabivof@gmail.com",
+  "instagram": "labi_antwerp",
+  "instagramUrl": "https://www.instagram.com/labi_antwerp/",
+
+  "booking": {
+    "provider": "Setmore",
+    "base": "https://labibookings.setmore.com/labibookings",
+    "staffId": "46c116af-9356-44f9-a0e0-95dce498603b",
+    "cancellationHours": 4,
+    "advanceBookingMonths": 1,
+    "$comment": "cancellationHours and advanceBookingMonths read from the booking page's own config (bookingConfig.cancellationTime = 14400000ms; advanceBookingTime.month = 1). These are facts, not guesses - they let the site say something concrete where the shop's own policy line does not."
+  },
+
+  "timezone": "Europe/Brussels",
+
+  "hours": {
+    "$comment": "THE hours config. Change these seven lines and the whole site follows: the live open/closed badge, the hours table, and the openingHoursSpecification in the structured data. Times are 24h, local Europe/Brussels, [open, close]. An empty array means closed all day.  IMPORTANT: these are the hours you can actually BOOK, derived from Setmore's own slot availability - see FINDINGS F-011 for why they differ from the hours Setmore displays.",
+    "0": [["10:00", "22:00"]],
+    "1": [["10:00", "22:00"]],
+    "2": [],
+    "3": [["20:00", "22:00"]],
+    "4": [["20:00", "22:00"]],
+    "5": [["20:00", "22:00"]],
+    "6": []
+  },
+
+  "services": [
+    {
+      "id": "short",
+      "productId": "fbe4dbcc-d46c-457f-b79f-ade4a232b895",
+      "setmoreName": "Short hair",
+      "minutes": 20,
+      "price": 35,
+      "colour": "#178fa4",
+      "name": { "nl": "Kort haar", "en": "Short hair" },
+      "method": { "nl": "Tondeuse, of tondeuse en schaar", "en": "Clippers, or clippers and scissors" }
+    },
+    {
+      "id": "mid",
+      "productId": "682dc31d-8726-4417-a8f9-4ca24cd74f14",
+      "setmoreName": "Mid long (clippers and Scissors)",
+      "minutes": 25,
+      "price": 40,
+      "colour": "#1f826c",
+      "name": { "nl": "Halflang haar", "en": "Mid-length hair" },
+      "method": { "nl": "Tondeuse en schaar", "en": "Clippers and scissors" }
+    },
+    {
+      "id": "long",
+      "productId": "4d4d1c8e-3b1e-4319-9f54-751883c9dacf",
+      "setmoreName": "Longer Hair ( Scissors Only + Wash And Dry)",
+      "minutes": 30,
+      "price": 45,
+      "colour": "#e2851e",
+      "name": { "nl": "Lang haar", "en": "Long hair" },
+      "method": { "nl": "Alleen schaar, wassen en föhnen inbegrepen", "en": "Scissors only, wash and blow-dry included" }
+    }
+  ],
+
+  "palette": {
+    "press": "#bf2b27",
+    "label": "#fee935",
+    "$comment": "Sampled from assets/source/og.png, the client's own master lockup: the red is 75.4% of that file's pixels. The three service colours above are sampled from the client's own existing service medallions."
+  }
+}

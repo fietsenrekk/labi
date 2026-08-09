@@ -1,0 +1,16 @@
+{
+  "name": "labi-antwerp",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "brand": "node tools/brand.mjs",
+    "images": "node tools/images.mjs",
+    "build": "node tools/build.mjs",
+    "test": "node tools/test-hours.mjs",
+    "check": "node tools/checks.mjs",
+    "axe": "node tools/axe.mjs",
+    "motion": "node tools/motion.mjs",
+    "shots": "node tools/shot.mjs",
+    "verify": "npm run test && npm run check && npm run axe && npm run motion"
+  }
+}
