@@ -22,7 +22,7 @@
 
 @font-face {
   font-family: 'Anybody';
-  src: url('/fonts/anybody-latin.woff2') format('woff2');
+  src: url('fonts/anybody-latin.woff2') format('woff2');
   font-weight: 100 900;
   font-stretch: 75% 125%;
   font-display: swap;
@@ -32,7 +32,7 @@
 }
 @font-face {
   font-family: 'Anybody';
-  src: url('/fonts/anybody-latin-ext.woff2') format('woff2');
+  src: url('fonts/anybody-latin-ext.woff2') format('woff2');
   font-weight: 100 900;
   font-stretch: 75% 125%;
   font-display: swap;
@@ -42,7 +42,7 @@
 }
 @font-face {
   font-family: 'Inter Tight';
-  src: url('/fonts/inter-tight-latin.woff2') format('woff2');
+  src: url('fonts/inter-tight-latin.woff2') format('woff2');
   font-weight: 400 700;
   font-display: swap;
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
@@ -51,7 +51,7 @@
 }
 @font-face {
   font-family: 'Inter Tight';
-  src: url('/fonts/inter-tight-latin-ext.woff2') format('woff2');
+  src: url('fonts/inter-tight-latin-ext.woff2') format('woff2');
   font-weight: 400 700;
   font-display: swap;
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
