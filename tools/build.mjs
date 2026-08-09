@@ -49,6 +49,58 @@ function wordmark(title) {
     .replace('<svg ', `<svg aria-label="${esc(title)}" role="img" focusable="false" `);
 }
 
+/* ------------------------------------------------------------------- css */
+
+/**
+ * Minify the stylesheet.
+ *
+ * The source is heavily commented on purpose - the comments record why a
+ * measurement forced a decision, and they are worth more than the bytes. They
+ * are not worth shipping in the critical path, so they are stripped here and
+ * kept in src.
+ *
+ * Quote-aware, because `content: ''` and any future `url('...')` have to
+ * survive a whitespace collapse intact.
+ */
+function minifyCSS(css) {
+  let out = '';
+  let quote = null;
+  for (let i = 0; i < css.length; i++) {
+    const c = css[i];
+    if (quote) {
+      out += c;
+      if (c === quote && css[i - 1] !== '\\') quote = null;
+      continue;
+    }
+    if (c === '"' || c === "'") { quote = c; out += c; continue; }
+    if (c === '/' && css[i + 1] === '*') {
+      const end = css.indexOf('*/', i + 2);
+      i = end === -1 ? css.length : end + 1;
+      continue;
+    }
+    out += c;
+  }
+  return out
+    .replace(/\s+/g, ' ')
+    .replace(/\s*([{}:;,>])\s*/g, '$1')
+    .replace(/;}/g, '}')
+    .trim();
+}
+
+const cssMin = minifyCSS(await readFile(path.join(ROOT, 'src/styles.css'), 'utf8'));
+
+/**
+ * The inlined copy needs absolute font paths; the standalone file needs
+ * relative ones.
+ *
+ * `url()` resolves against whatever contains the CSS. In dist/styles.css that
+ * is the stylesheet, so `fonts/x.woff2` is right. Inlined into a page at
+ * /en/legal/privacy/ it resolves against the document and asks for
+ * /en/legal/privacy/fonts/x.woff2, which does not exist. Root-absolute is
+ * wrong too under a project-pages base path, so the base is applied here.
+ */
+const cssInline = cssMin.replace(/url\('fonts\//g, `url('${A('/fonts/')}`);
+
 /* --------------------------------------------------------------- booking */
 
 /**
@@ -241,7 +293,18 @@ function layout({ lang, t, title, description, route, altRoute, body, jsonld }) 
 -->
 <link rel="preload" href="${A('/fonts/anybody-latin.woff2')}" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="${A('/fonts/inter-tight-latin.woff2')}" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="${A('/styles.css')}">
+<!--
+  The stylesheet is inlined, not linked.
+
+  It is 15.6 KB minified, about 4 KB over the wire, and as a separate file it
+  was a full round trip sitting in the critical path in front of every piece of
+  text on the page. GitHub Pages answers the document in roughly 700ms under
+  Lighthouse's simulated mobile throttle, which is already half the LCP budget -
+  there is no room for a second serial request before the first paint.
+
+  dist/styles.css is still written for anyone who wants to read it.
+-->
+<style>${cssInline}</style>
 
 <!--
   Set the motion class before first paint, so an element that is about to
@@ -524,45 +587,6 @@ for (const { route, html } of pages) {
 }
 
 /* assets */
-
-/**
- * Minify the stylesheet on the way out.
- *
- * The source is heavily commented on purpose - the comments explain why a
- * measurement forced a decision, and they are worth more than the bytes. They
- * are also render-blocking bytes on a phone, so they are stripped from dist and
- * kept in src.
- *
- * Quote-aware, because `content: ''` and any future url('...') must survive a
- * whitespace collapse intact.
- */
-function minifyCSS(css) {
-  let out = '';
-  let quote = null;
-  for (let i = 0; i < css.length; i++) {
-    const c = css[i];
-    if (quote) {
-      out += c;
-      if (c === quote && css[i - 1] !== '\\') quote = null;
-      continue;
-    }
-    if (c === '"' || c === "'") { quote = c; out += c; continue; }
-    if (c === '/' && css[i + 1] === '*') {
-      const end = css.indexOf('*/', i + 2);
-      i = end === -1 ? css.length : end + 1;
-      continue;
-    }
-    out += c;
-  }
-  return out
-    .replace(/\s+/g, ' ')
-    .replace(/\s*([{}:;,>])\s*/g, '$1')
-    .replace(/;}/g, '}')
-    .trim();
-}
-
-const cssSource = await readFile(path.join(ROOT, 'src/styles.css'), 'utf8');
-const cssMin = minifyCSS(cssSource);
 await writeFile(path.join(DIST, 'styles.css'), cssMin);
 await cp(path.join(ROOT, 'src/hours.js'), path.join(DIST, 'hours.js'));
 await cp(path.join(ROOT, 'src/app.js'), path.join(DIST, 'app.js'));
