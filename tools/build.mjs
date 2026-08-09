@@ -235,6 +235,13 @@ function layout({ lang, t, title, description, route, altRoute, body, jsonld }) 
 <link rel="preload" href="${A('/fonts/anybody-latin.woff2')}" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="${A('/styles.css')}">
 
+<!--
+  Set the motion class before first paint, so an element that is about to
+  animate is never painted at full opacity and then hidden. Only decorative
+  discs are affected; app.js removes this again if the motion libraries fail.
+-->
+<script>try{if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('js-motion')}catch(e){}</script>
+
 <script type="application/ld+json">${JSON.stringify(jsonld)}</script>
 <script type="application/json" id="hours-config">${JSON.stringify({
   hours: business.hours,
@@ -333,14 +340,23 @@ function homeBody(t, lang, status, todayIndex) {
       <span class="disc disc--ghost" data-disc="ghost"></span>
     </div>
     <div class="shell sign__inner">
+      <!--
+        Nothing above the fold carries data-anim, deliberately.
+
+        The status, the headline, the hours, the three prices and the booking
+        button are the entire job of this page at 21:40, and animating them in
+        made them the thing that was late: Lighthouse named this paragraph as
+        the LCP element, and the motion layer was hiding it *after* first paint
+        and fading it back. The discs animate. The answer does not.
+      -->
       ${statusPill(t, status)}
-      <h1 class="display sign__word" data-anim="drop">${t.heroWord}</h1>
-      <p class="lede" data-anim="drop">${t.heroLede}</p>
-      <p class="sign__facts" data-anim="drop">
+      <h1 class="display sign__word">${t.heroWord}</h1>
+      <p class="lede">${t.heroLede}</p>
+      <p class="sign__facts">
         ${business.services.map((s) => `<span><b>${esc(s.name[lang])}</b> &euro;${s.price}</span>`)
           .join('<span class="sep" aria-hidden="true">/</span>')}
       </p>
-      <p class="actions" data-anim="drop">
+      <p class="actions">
         <a class="btn btn--primary" href="${bookURL()}" ${bookAttrs} data-book="hero">${esc(t.book)}</a>
         <a class="btn btn--ghost" href="#prices">${esc(t.seePrices)}</a>
       </p>
@@ -500,7 +516,46 @@ for (const { route, html } of pages) {
 }
 
 /* assets */
-await cp(path.join(ROOT, 'src/styles.css'), path.join(DIST, 'styles.css'));
+
+/**
+ * Minify the stylesheet on the way out.
+ *
+ * The source is heavily commented on purpose - the comments explain why a
+ * measurement forced a decision, and they are worth more than the bytes. They
+ * are also render-blocking bytes on a phone, so they are stripped from dist and
+ * kept in src.
+ *
+ * Quote-aware, because `content: ''` and any future url('...') must survive a
+ * whitespace collapse intact.
+ */
+function minifyCSS(css) {
+  let out = '';
+  let quote = null;
+  for (let i = 0; i < css.length; i++) {
+    const c = css[i];
+    if (quote) {
+      out += c;
+      if (c === quote && css[i - 1] !== '\\') quote = null;
+      continue;
+    }
+    if (c === '"' || c === "'") { quote = c; out += c; continue; }
+    if (c === '/' && css[i + 1] === '*') {
+      const end = css.indexOf('*/', i + 2);
+      i = end === -1 ? css.length : end + 1;
+      continue;
+    }
+    out += c;
+  }
+  return out
+    .replace(/\s+/g, ' ')
+    .replace(/\s*([{}:;,>])\s*/g, '$1')
+    .replace(/;}/g, '}')
+    .trim();
+}
+
+const cssSource = await readFile(path.join(ROOT, 'src/styles.css'), 'utf8');
+const cssMin = minifyCSS(cssSource);
+await writeFile(path.join(DIST, 'styles.css'), cssMin);
 await cp(path.join(ROOT, 'src/hours.js'), path.join(DIST, 'hours.js'));
 await cp(path.join(ROOT, 'src/app.js'), path.join(DIST, 'app.js'));
 await cp(path.join(ROOT, 'assets/fonts'), path.join(DIST, 'fonts'), { recursive: true });

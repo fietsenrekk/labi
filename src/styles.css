@@ -918,6 +918,11 @@ figure.shot figcaption {
   clip-path: inset(0 0 100% 0);
 }
 
+/* The discs are the only above-the-fold thing allowed to be hidden before it
+   animates, and only because they are decoration. Everything that answers a
+   question is painted by the browser and never touched. */
+.js-motion [data-disc] { opacity: 0; }
+
 @media (prefers-reduced-motion: reduce) {
   .js-motion [data-anim] {
     opacity: 1 !important;

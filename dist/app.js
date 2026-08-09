@@ -102,6 +102,9 @@ const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
  * nothing to undo.
  */
 if (!reduced.matches) {
+  // `js-motion` is set by an inline script in <head> so the hidden state exists
+  // before first paint. Setting it here instead made content paint, disappear,
+  // and fade back in.
   html.classList.add('js-motion');
 
   // If the libraries never arrive, reveal everything and carry on. Content is
@@ -148,14 +151,17 @@ if (!reduced.matches) {
         clearProps: 'transform',
       });
 
-      // Hero: one orchestrated timeline on load, not a scroll trigger.
-      const hero = document.querySelector('.sign');
-      if (hero) {
-        gsap.timeline({ defaults: { ease: 'expo.out' } })
-          .from('[data-disc]', { scale: 0.55, opacity: 0, duration: 1.1, stagger: 0.08 })
-          .to(hero.querySelectorAll('[data-anim="drop"]'), {
-            opacity: 1, y: 0, duration: 0.7, stagger: 0.06,
-          }, 0.25);
+      // The hero's discs land on load. Its words do not move: they are the
+      // answer to "is it open, what does it cost, where do I tap", and they are
+      // painted by the browser before any of this runs.
+      //
+      // fromTo, not from: the CSS hides the discs pre-paint so they cannot
+      // flash at full size first, which means their "current" opacity is 0 and
+      // a plain .from() would animate 0 to 0.
+      if (document.querySelector('[data-disc]')) {
+        gsap.fromTo('[data-disc]',
+          { scale: 0.55, opacity: 0 },
+          { scale: 1, opacity: 1, duration: 1.1, stagger: 0.08, ease: 'expo.out' });
       }
 
       // Everything below the fold, batched per section rather than per element.
