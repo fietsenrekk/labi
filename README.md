@@ -70,8 +70,17 @@ SITE_ORIGIN=https://fietsenrekk.github.io/labi node tools/build.mjs
 SITE_ORIGIN=http://localhost:4217 node tools/build.mjs      # local
 ```
 
-A GitHub Actions workflow builds and publishes `dist/` to Pages on every push to
-`main`.
+Publishing is a `gh-pages` branch push of `dist/`:
+
+```bash
+SITE_ORIGIN=https://fietsenrekk.github.io/labi node tools/build.mjs
+git add -A && git commit -m "build"
+git subtree push --prefix dist origin gh-pages
+```
+
+An Actions workflow would be tidier, but pushing one needs a token with the
+`workflow` scope, which the account used here does not have. The branch push
+produces exactly the same site.
 
 ### Which domain is canonical
 
