@@ -232,7 +232,15 @@ function layout({ lang, t, title, description, route, altRoute, body, jsonld }) 
 <link rel="apple-touch-icon" href="${A('/img/og.png')}">
 
 <link rel="preconnect" href="https://labibookings.setmore.com" crossorigin>
+<!--
+  Both above-the-fold faces are preloaded, not just the display one.
+  Lighthouse put LCP on the hero lede, which is set in Inter Tight: the page
+  painted at 1.2s in the fallback face and only reached its largest contentful
+  paint when the real font swapped in. Preloading the display face alone fixed
+  the headline and left the paragraph waiting.
+-->
 <link rel="preload" href="${A('/fonts/anybody-latin.woff2')}" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="${A('/fonts/inter-tight-latin.woff2')}" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="${A('/styles.css')}">
 
 <!--
