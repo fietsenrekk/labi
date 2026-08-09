@@ -150,13 +150,21 @@ for (const width of WIDTHS) {
   await send('Runtime.evaluate', {
     awaitPromise: true,
     expression: `(async () => {
-      const step = window.innerHeight * 0.8;
-      for (let y = 0; y < document.documentElement.scrollHeight; y += step) {
-        window.scrollTo(0, y);
-        await new Promise(r => setTimeout(r, 60));
+      // Flip lazy images to eager rather than scrolling them into view.
+      // Scrolling does not work here: Lenis intercepts programmatic scroll, so
+      // window.scrollTo never moves the viewport, the images below the fold
+      // never start loading, and awaiting decode() on them hangs forever.
+      for (const img of document.querySelectorAll('img[loading="lazy"]')) {
+        img.loading = 'eager';
       }
-      window.scrollTo(0, 0);
-      await Promise.all([...document.images].map(i => i.decode().catch(() => {})));
+      const withTimeout = (p, ms) => Promise.race([
+        p.catch(() => {}),
+        new Promise(r => setTimeout(r, ms)),
+      ]);
+      await withTimeout(
+        Promise.all([...document.images].map(i => i.decode().catch(() => {}))),
+        6000,
+      );
       await new Promise(r => setTimeout(r, 250));
     })()`,
   });
