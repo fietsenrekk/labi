@@ -59,6 +59,39 @@
     U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
+/*
+  Metric-matched fallbacks.
+
+  The hero text is painted by the browser before the webfonts arrive, which is
+  the whole point - it is the answer to "is it open, what does it cost". But a
+  fallback face with different metrics sets a different number of lines, and
+  when the real font swaps in the whole centred hero re-flows. That measured as
+  CLS 0.201, and it only appeared once the hero stopped being hidden behind an
+  animation: the shift had always been there, the opacity was hiding it.
+
+  Measured in the browser at 200px on a real string:
+
+    Anybody 800 / 112%   2971px      Arial Bold   3711px   ->  80.0%
+    Inter Tight 400      2768px      Arial        3065px   ->  90.3%
+
+  Arial is the anchor because it exists on Windows and macOS, and Liberation
+  Sans is metric-compatible with it on Linux. Matching the advance width is what
+  matters here: both headline and lede have a fixed line-height, so block height
+  is line-count times line-height, and line count is decided by width.
+*/
+@font-face {
+  font-family: 'Anybody fallback';
+  src: local('Arial Bold'), local('Arial'), local('Liberation Sans Bold'), local('Liberation Sans');
+  size-adjust: 80.0%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Inter fallback';
+  src: local('Arial'), local('Liberation Sans');
+  size-adjust: 90.3%;
+  line-gap-override: 0%;
+}
+
 /* ----------------------------------------------------------------- tokens */
 
 :root {
@@ -79,8 +112,8 @@
   --ink: var(--wax);
   --paper: var(--sleeve);
 
-  --display: 'Anybody', ui-sans-serif, system-ui, sans-serif;
-  --text: 'Inter Tight', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --display: 'Anybody', 'Anybody fallback', ui-sans-serif, system-ui, sans-serif;
+  --text: 'Inter Tight', 'Inter fallback', ui-sans-serif, system-ui, -apple-system, sans-serif;
 
   /* Fluid scale. The display sizes are deliberately extreme at the top - the
      hero word is meant to behave like paint on a wall, not like a heading. */
