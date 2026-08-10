@@ -275,9 +275,21 @@ section { position: relative; }
   overflow: clip;
 }
 
+/*
+  Sized to the viewport, not to the hero.
+
+  With `inset: 0` this layer is exactly as tall as the section, so anything that
+  changes the hero's height - a font swapping in and re-wrapping the headline -
+  resizes an 800px-tall painted element. Lighthouse attributed the entire CLS of
+  0.175 to this one div. Pinning it to 100svh decouples it from the text: the
+  discs cannot move because the words below them re-wrapped.
+*/
 .sign__discs {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100svh;
   pointer-events: none;
   overflow: clip;
 }
