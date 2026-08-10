@@ -85,7 +85,16 @@ intercepts programmatic scroll.
 
 ## Final numbers, on the live URL
 
+```
+Performance 99 · Accessibility 100 · Best practices 100 · SEO 100
+CLS 0.005 · TBT 50ms · total weight 173 KiB · JS 50 KB gzip
+LCP 2.0s — misses the 1.5s target; about 720ms of it is GitHub Pages TTFB.
+```
 
+CLS is the one worth reading about: it started at a false 0, went to 0.201 the
+moment the hero stopped hiding its own reflow, and took three attempts to
+actually fix — the first two aimed at the element Lighthouse named rather than
+the one causing it. `PERFORMANCE.md` has the whole account.
 
 ## Verification
 
