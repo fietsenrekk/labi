@@ -381,6 +381,13 @@ section { position: relative; }
 .sign__facts b { font-weight: 800; }
 .sign__facts .sep { opacity: 0.4; }
 
+/* On a narrow screen the three prices stack, and the slashes are left dangling
+   at the end of each line. The line break is the separator there. */
+@media (max-width: 30em) {
+  .sign__facts { display: grid; gap: 0.4rem; justify-items: start; }
+  .sign__facts .sep { display: none; }
+}
+
 /* --------------------------------------------------------- the status pill */
 
 /*

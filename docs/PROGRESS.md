@@ -83,6 +83,10 @@ the viewport to the document height inflated `100svh` so the hero photographed a
 6000px tall, and `img.decode()` never settled on lazy images because Lenis
 intercepts programmatic scroll.
 
+## Final numbers, on the live URL
+
+
+
 ## Verification
 
 Everything below runs against the **live** URL.
