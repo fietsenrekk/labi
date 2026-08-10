@@ -478,17 +478,37 @@ section { position: relative; }
   border-bottom: 1px solid color-mix(in srgb, var(--sleeve) 12%, transparent);
 }
 
+/*
+  The wordmark is not allowed to flex.
+
+  The masthead is a flex row, and before the webfonts arrive the status pill next
+  to it is wider. That overflowed the line, and the only shrinkable item was the
+  wordmark: it rendered at 24px tall, then sprang back to 36px when the fonts
+  swapped in. Chrome attributed the page's whole 0.178 CLS to the resulting
+  reflow. `flex: none` on the mark and `min-width: 0` on the pill means the pill
+  gives way instead, and it has room to.
+*/
 .masthead__mark {
   display: flex;
   align-items: center;
   color: var(--label);
   text-decoration: none;
+  flex: none;
 }
-.masthead__mark svg { width: clamp(4.2rem, 9vw, 5.6rem); height: auto; }
+.masthead__mark svg {
+  width: clamp(4.2rem, 9vw, 5.6rem);
+  height: auto;
+  flex: none;
+}
 
 .masthead__spacer { flex: 1; }
 
-.masthead .status { font-size: 0.72rem; padding: 0.35rem 0.8rem 0.35rem 0.6rem; }
+.masthead .status {
+  font-size: 0.72rem;
+  padding: 0.35rem 0.8rem 0.35rem 0.6rem;
+  min-width: 0;          /* this is the item that yields, not the wordmark */
+  overflow: hidden;
+}
 
 /*
   While the hero is on screen its own status pill and booking button are doing
