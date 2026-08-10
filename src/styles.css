@@ -69,26 +69,34 @@
   CLS 0.201, and it only appeared once the hero stopped being hidden behind an
   animation: the shift had always been there, the opacity was hiding it.
 
-  Measured in the browser at 200px on a real string:
+  The numbers are measured against the fallback face itself, in the page, at the
+  weight and stretch it is actually used at - not against a bare Arial in the
+  abstract. Doing it the abstract way is how the first attempt landed on 80% and
+  set the headline at 1618px where the real font sets 2722px, which made the
+  reflow worse rather than better.
 
-    Anybody 800 / 112%   2971px      Arial Bold   3711px   ->  80.0%
-    Inter Tight 400      2768px      Arial        3065px   ->  90.3%
+  At font-size 200px, "Open als de rest sluit":
 
-  Arial is the anchor because it exists on Windows and macOS, and Liberation
-  Sans is metric-compatible with it on Linux. Matching the advance width is what
-  matters here: both headline and lede have a fixed line-height, so block height
-  is line-count times line-height, and line count is decided by width.
+    Anybody 800 / 112%   2722px      fallback before adjust  1618px  ->  134.6%
+    Inter Tight 400      1781px      fallback before adjust  1696px  ->   94.8%
+
+  Arial is the anchor because it ships on Windows and macOS, and Liberation Sans
+  is metric-compatible with it on Linux. Matching advance width is what matters:
+  the headline and lede both have a fixed line-height, so block height is line
+  count times line-height, and line count is decided by width.
+
+  Re-measure with tools/font-metrics.mjs if either family ever changes.
 */
 @font-face {
   font-family: 'Anybody fallback';
   src: local('Arial Bold'), local('Arial'), local('Liberation Sans Bold'), local('Liberation Sans');
-  size-adjust: 80.0%;
+  size-adjust: 134.6%;
   line-gap-override: 0%;
 }
 @font-face {
   font-family: 'Inter fallback';
   src: local('Arial'), local('Liberation Sans');
-  size-adjust: 90.3%;
+  size-adjust: 94.8%;
   line-gap-override: 0%;
 }
 
