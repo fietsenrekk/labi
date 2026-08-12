@@ -78,6 +78,15 @@ vsync-locked — the median is 5ms, about 195fps. Replaced with long-task counti
 which is what actually drops frames. Chasing the bogus number did produce two
 real wins: dropping `mix-blend-mode` and `backdrop-filter` on phones.
 
+**The week table was stuck on the build date.** The status pill re-rendered on
+every load; the table's "vandaag" marker did not - it was baked into the HTML at
+compile time and never touched again, so on a Wednesday the table still insisted
+it was Monday while the pill three sections above it was right. Two clocks on one
+page, one of them stopped. Everything time-dependent is now painted from a single
+ call, and with JavaScript off a noscript stylesheet hides both
+the day marker and the live status rather than letting a snapshot assert
+something stale.
+
 **The screenshot tool deadlocked**, twice, for two different reasons: resizing
 the viewport to the document height inflated `100svh` so the hero photographed at
 6000px tall, and `img.decode()` never settled on lazy images because Lenis
