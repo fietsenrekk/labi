@@ -815,7 +815,10 @@ section { position: relative; }
    4.5:1 - 0.45 alpha over the night ground measured about 4.2. */
 .week__closed { opacity: 0.66; }
 
+/* Present in every row, revealed only on the current one. The runtime moves an
+   attribute; it never edits the table's text. */
 .week__today {
+  display: none;
   font-size: 0.68rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -823,6 +826,7 @@ section { position: relative; }
   font-weight: 700;
   padding-left: 0.75rem;
 }
+.week tr[data-today] .week__today { display: inline; }
 
 @media (max-width: 40em) {
   .week__track { min-width: 4rem; height: 1.1rem; }

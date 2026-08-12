@@ -149,10 +149,14 @@ function weekTable(t, todayIndex) {
       ? intervals.map(([o, c]) => `${o}&ndash;${c}`).join(', ')
       : `<span class="week__closed">${esc(t.closedWord)}</span>`;
 
-    return `<tr${isToday ? ' data-today' : ''}>
+    // data-day is what the runtime uses to move the marker. The "today" label is
+    // rendered on EVERY row and revealed by CSS, so marking a different day is
+    // an attribute flip rather than a DOM edit - and so a stale build cannot
+    // leave the word "vandaag" sitting in only one row's markup.
+    return `<tr data-day="${d}"${isToday ? ' data-today' : ''}>
         <th scope="row" class="week__day">${esc(t.days[d])}</th>
         <td><div class="week__track">${bars}</div></td>
-        <td class="week__time tnum">${times}${isToday ? `<span class="week__today">${esc(t.todayWord)}</span>` : ''}</td>
+        <td class="week__time tnum">${times}<span class="week__today">${esc(t.todayWord)}</span></td>
       </tr>`;
   }).join('\n      ');
 
@@ -185,10 +189,13 @@ function weekTable(t, todayIndex) {
  * anything, and data-open drives the one piece of colour in the design.
  */
 function statusPill(t, status, extraClass = '') {
-  const open = status?.state === 'open' || status?.state === 'closing-soon';
+  // The live label is correct at build time and re-rendered by the browser on
+  // load. With JavaScript off it can only ever be as fresh as the last build, so
+  // a <noscript> swaps it for a statement that is true on any day.
   return `<p class="status ${extraClass}" data-status role="status">
       <span class="status__dot" aria-hidden="true"></span>
-      <span data-status-text>${esc(statusLabel(status, t.status))}</span>
+      <span class="status__live" data-status-text>${esc(statusLabel(status, t.status))}</span>
+      <noscript><span class="status__static">${esc(t.hoursLabel)}</span></noscript>
     </p>`.replace(/\n\s+/g, ' ');
 }
 
@@ -312,6 +319,20 @@ function layout({ lang, t, title, description, route, altRoute, body, jsonld }) 
   discs are affected; app.js removes this again if the motion libraries fail.
 -->
 <script>try{if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('js-motion')}catch(e){}</script>
+
+<!--
+  Anything that claims to know what day or time it is has to be suppressed when
+  there is no script to keep it current. A build is a snapshot; without
+  JavaScript the page would still be asserting whatever was true the moment it
+  was compiled, which is how the week table came to insist it was Monday on a
+  Wednesday.
+-->
+<noscript><style>
+  .status__live { display: none; }
+  .week__today { display: none !important; }
+  .week tr[data-today] .week__bar { background: color-mix(in srgb, var(--sleeve) 42%, transparent); }
+  .week tr[data-today] .week__day { color: inherit; }
+</style></noscript>
 
 <script type="application/ld+json">${JSON.stringify(jsonld)}</script>
 <script type="application/json" id="hours-config">${JSON.stringify({

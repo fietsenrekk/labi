@@ -76,6 +76,7 @@ export const CONTENT = {
     colTimes: 'Tijden',
     closedWord: 'Gesloten',
     todayWord: 'vandaag',
+    hoursLabel: 'Openingsuren',
     dayOrder: WEEK_ORDER,
     days: DAYS_NL,
 
@@ -182,6 +183,7 @@ export const CONTENT = {
     colTimes: 'Times',
     closedWord: 'Closed',
     todayWord: 'today',
+    hoursLabel: 'Opening hours',
     dayOrder: WEEK_ORDER,
     days: DAYS_EN,
 

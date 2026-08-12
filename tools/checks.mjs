@@ -187,7 +187,12 @@ const noJs = JSON.parse(await evaluate(`JSON.stringify({
   phone: !!document.querySelector('a[href^="tel:"]'),
   address: document.body.textContent.includes('Klapdorp 37'),
   book: !!document.querySelector('a[href*="setmore.com"]'),
-  status: document.querySelector('[data-status-text]')?.textContent.trim() ?? null,
+  // The visible one. The build-time live label is still in the markup but the
+  // noscript stylesheet hides it, so reading it here would report a string no
+  // visitor is actually being shown.
+  status: [...document.querySelectorAll('.status__static, .status__live')]
+    .filter(el => getComputedStyle(el).display !== 'none')
+    .map(el => el.textContent.trim())[0] ?? null,
   hiddenAnims: [...document.querySelectorAll('[data-anim]')]
     .filter(el => getComputedStyle(el).opacity === '0' || getComputedStyle(el).clipPath !== 'none').length,
 })`));
@@ -201,6 +206,53 @@ if (!noJs.status) fail('no-JS: status text missing');
 if (noJs.hiddenAnims) fail(`no-JS: ${noJs.hiddenAnims} element(s) still hidden by the motion layer`);
 if (noJs.rows === 7 && noJs.prices.length === 3 && !noJs.hiddenAnims) {
   ok(`no-JS: full week, ${noJs.prices.join('/')}, address, phone, booking and "${noJs.status}" all present`);
+}
+
+/* ------------------- 3b. everything time-dependent agrees with the clock ---- */
+
+/*
+ * The bug this exists to prevent: the week table's "today" marker was written
+ * into the HTML at build time and never updated, so the table insisted it was
+ * Monday on a Wednesday while the status pill directly above it was correct.
+ * Two clocks on one page, one of them stopped.
+ *
+ * So: with JS on, the marked row must be today in Europe/Brussels. With JS off,
+ * nothing may claim to know what day it is.
+ */
+await visit('/');
+const today = JSON.parse(await evaluate(`JSON.stringify((() => {
+  const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Brussels', weekday: 'short' })
+    .formatToParts(new Date());
+  const days = { Sun:0, Mon:1, Tue:2, Wed:3, Thu:4, Fri:5, Sat:6 };
+  const expected = days[parts.find(p => p.type === 'weekday').value];
+  const marked = [...document.querySelectorAll('.week tbody tr[data-today]')]
+    .map(tr => Number(tr.dataset.day));
+  const visibleLabels = [...document.querySelectorAll('.week__today')]
+    .filter(el => getComputedStyle(el).display !== 'none').length;
+  return { expected, marked, visibleLabels };
+})())`));
+
+if (today.marked.length !== 1) {
+  fail(`the week table marks ${today.marked.length} rows as today, expected exactly 1`);
+} else if (today.marked[0] !== today.expected) {
+  fail(`the week table marks day ${today.marked[0]} as today; Europe/Brussels says ${today.expected}`);
+} else if (today.visibleLabels !== 1) {
+  fail(`${today.visibleLabels} "today" labels are visible, expected 1`);
+} else {
+  ok(`the week table marks the correct day as today (Brussels day ${today.expected})`);
+}
+
+await visit('/', { js: false });
+const staleClaims = JSON.parse(await evaluate(`JSON.stringify({
+  todayLabels: [...document.querySelectorAll('.week__today')]
+    .filter(el => getComputedStyle(el).display !== 'none').length,
+  liveStatus: [...document.querySelectorAll('.status__live')]
+    .filter(el => getComputedStyle(el).display !== 'none').length,
+})`));
+if (staleClaims.todayLabels) fail(`no-JS: ${staleClaims.todayLabels} row(s) still claim to be today`);
+if (staleClaims.liveStatus) fail(`no-JS: the build-time live status is still shown and can be stale`);
+if (!staleClaims.todayLabels && !staleClaims.liveStatus) {
+  ok('no-JS: nothing claims to know the current day or open state');
 }
 
 /* --------------------------------- 4. status is announced, not just coloured */
