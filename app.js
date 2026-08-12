@@ -22,14 +22,32 @@ const config = JSON.parse(document.getElementById('hours-config').textContent);
 /* ----------------------------------------------------------- open / closed */
 
 const statusNodes = [...document.querySelectorAll('[data-status-text]')];
+const dayRows = [...document.querySelectorAll('.week tbody tr[data-day]')];
 
 function paintStatus() {
-  const status = resolve(config.hours, brusselsNow());
+  const now = brusselsNow();
+  const status = resolve(config.hours, now);
   const text = statusLabel(status, config.status);
   for (const node of statusNodes) {
     if (node.textContent !== text) node.textContent = text;
   }
   html.dataset.open = String(isOpen(status));
+
+  /*
+    Move the "today" marker in the week table.
+
+    This is not decoration, and forgetting it was a real bug: the marker was
+    written into the HTML at build time and never touched again, so the table
+    went on insisting it was Monday for as long as the build was old - while the
+    status pill directly above it, which does re-render, correctly said
+    Wednesday. Two clocks on one page, one of them stopped.
+
+    Everything that depends on the current time is now painted from the same
+    brusselsNow() call, on the same schedule.
+  */
+  for (const row of dayRows) {
+    row.toggleAttribute('data-today', Number(row.dataset.day) === now.day);
+  }
 }
 
 paintStatus();
